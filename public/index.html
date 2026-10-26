@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SwaadSafe - AI Menu Allergy & Taste Advisor</title>
+  <title>SwaadSafe - AI Menu Allergy, Calorie & Taste Advisor</title>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -11,15 +11,16 @@
     <header>
       <span class="badge-tag">Powered by Sarvam AI & Computational Gastronomy</span>
       <h1>🍽️ SwaadSafe</h1>
-      <p class="subtitle">Scan any restaurant menu. Detect hidden regional allergens, customize recipes with the kitchen, and get dishes tailored to your personal taste profile.</p>
+      <p class="subtitle">Scan any restaurant menu. Detect hidden allergens, track calories, match your favorite dishes, and get customized meals for your diet.</p>
     </header>
 
     <div class="grid-layout">
       <!-- LEFT COLUMN: Profile & Preferences -->
       <aside>
+        <!-- Section 1: Allergens -->
         <div class="card">
-          <h2 class="card-title">🛡️ 1. Your Allergy Profile</h2>
-          <span class="section-label">Select allergens to avoid:</span>
+          <h2 class="card-title">🛡️ 1. Allergy Profile</h2>
+          <span class="section-label">Select allergens to strictly avoid:</span>
           <div class="pill-grid" id="allergenPills">
             <div class="pill selected-allergen" data-value="Dairy / Milk / Lactose">🥛 Dairy / Milk / Ghee</div>
             <div class="pill selected-allergen" data-value="Gluten / Wheat">🌾 Gluten / Wheat / Hing</div>
@@ -32,17 +33,50 @@
             <div class="pill" data-value="Shellfish / Fish">🦐 Shellfish / Fish</div>
           </div>
           <input type="text" id="customAllergen" placeholder="+ Add custom allergen (e.g. Garlic, Mushroom)">
+        </div>
 
-          <h2 class="card-title" style="margin-top: 20px;">🥗 2. Dietary Preference</h2>
-          <div class="pill-grid" id="dietPills">
-            <div class="pill selected-diet" data-value="Vegetarian">🌱 Vegetarian</div>
-            <div class="pill" data-value="Vegan">🥑 Vegan</div>
-            <div class="pill" data-value="Jain (No Onion/Garlic)">🙏 Jain</div>
-            <div class="pill" data-value="Non-Vegetarian">🍗 Non-Veg</div>
+        <!-- Section 2: Meal Time & Calorie Goal -->
+        <div class="card">
+          <h2 class="card-title">⏰ 2. Meal Time & Calorie Target</h2>
+          <span class="section-label">What meal is this?</span>
+          <div class="pill-grid" id="mealTimePills">
+            <div class="pill" data-value="Breakfast">🍳 Breakfast</div>
+            <div class="pill selected-meal" data-value="Lunch">🍱 Lunch</div>
+            <div class="pill" data-value="Dinner">🍲 Dinner</div>
+            <div class="pill" data-value="Snack / Tiffin">☕ Snack / Tiffin</div>
           </div>
 
-          <h2 class="card-title" style="margin-top: 20px;">🌶️ 3. Taste Profile</h2>
-          <span class="section-label">What flavors do you crave today?</span>
+          <label class="section-label" for="calorieGoalInput" style="margin-top: 14px;">
+            Target Calories for this meal: <span id="calorieDisplay" style="color: var(--primary); font-weight: 700;">650 kcal</span>
+          </label>
+          <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+            <input type="number" id="calorieGoalInput" value="650" min="200" max="2500" step="50" style="margin-bottom: 0;">
+            <button type="button" class="btn-preset" data-cal="450">Light (450)</button>
+            <button type="button" class="btn-preset" data-cal="650">Mid (650)</button>
+            <button type="button" class="btn-preset" data-cal="850">Hearty (850)</button>
+          </div>
+
+          <span class="section-label" style="margin-top: 16px;">Nutritional & Dietary Goals:</span>
+          <div class="pill-grid" id="dietaryGoalPills">
+            <div class="pill selected-goal" data-value="High Protein">💪 High Protein</div>
+            <div class="pill" data-value="Low Carb / Keto">🥑 Low Carb</div>
+            <div class="pill" data-value="Diabetic Friendly">🩺 Diabetic Friendly</div>
+            <div class="pill selected-diet" data-value="Vegetarian">🌱 Vegetarian</div>
+            <div class="pill" data-value="Vegan">🍃 Vegan</div>
+            <div class="pill" data-value="Jain (No Onion/Garlic)">🙏 Jain</div>
+          </div>
+        </div>
+
+        <!-- Section 3: Favorite Dishes & Taste Profile -->
+        <div class="card">
+          <h2 class="card-title">❤️ 3. Your Favorite Dishes</h2>
+          <span class="section-label">Tell us dishes you love (for flavor ranking):</span>
+          <textarea id="favoriteDishesInput" rows="2" placeholder="e.g. Butter Chicken, Paneer Tikka, Crispy Masala Dosa, Dal Makhani"></textarea>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: -10px; margin-bottom: 16px;">
+            Sarvam AI maps flavor molecules, sauces, and spices to recommend dishes similar to what you love.
+          </p>
+
+          <span class="section-label">Taste Profile / Flavor Craving:</span>
           <div class="pill-grid" id="tastePills">
             <div class="pill selected-taste" data-value="Spicy / Teekha">🌶️ Spicy (Teekha)</div>
             <div class="pill selected-taste" data-value="Tangy / Chatpata">🍋 Tangy (Chatpata)</div>
@@ -113,13 +147,34 @@
 
         <!-- RESULTS CONTAINER -->
         <div id="resultsCard" class="card" style="display: none;">
-          <h2 class="card-title">🔍 Safety & Taste Analysis</h2>
+          <h2 class="card-title">🔍 Personalized Gastronomy & Safety Review</h2>
           <div id="summaryBanner" class="results-header"></div>
 
-          <h3 style="font-size: 1.05rem; margin-bottom: 12px; color: #047857;">🌟 Top Safe Recommendations for Your Taste</h3>
+          <!-- Recommended Meal Combo Box -->
+          <div id="comboContainer" class="combo-card" style="display: none;">
+            <div class="combo-header">
+              <span class="combo-title" id="comboTitle">🍱 Recommended Meal Combo</span>
+              <span class="combo-calories" id="comboCalories">🔥 ~580 kcal</span>
+            </div>
+            <div id="comboItems" class="combo-items-list"></div>
+            <p id="comboReason" class="combo-reason"></p>
+          </div>
+
+          <!-- Top Recommendations -->
+          <h3 style="font-size: 1.05rem; margin-top: 20px; margin-bottom: 12px; color: #047857;">🌟 Top Safe Recommendations for Your Taste</h3>
           <div id="topRecommendations"></div>
 
-          <h3 style="font-size: 1.05rem; margin-top: 24px; margin-bottom: 12px; color: #1e293b;">📋 Full Dish Breakdown</h3>
+          <!-- Course Filter Buttons -->
+          <div class="course-filter-bar">
+            <span style="font-size: 0.85rem; font-weight: 700; color: #475569;">Filter Course:</span>
+            <button class="btn-course-filter active" data-category="ALL">All Dishes</button>
+            <button class="btn-course-filter" data-category="STARTER">Starters / Snacks</button>
+            <button class="btn-course-filter" data-category="MAIN">Mains</button>
+            <button class="btn-course-filter" data-category="BREAD">Breads & Rice</button>
+            <button class="btn-course-filter" data-category="DESSERT">Desserts & Drinks</button>
+          </div>
+
+          <!-- Full Dishes List -->
           <div id="dishesList"></div>
 
           <!-- Waiter Safety Card -->
@@ -132,12 +187,16 @@
           </div>
         </div>
 
+        <!-- Loading State -->
         <div id="loadingCard" class="card empty-state" style="display: none;">
           <div class="spinner" style="border-top-color: var(--primary); width: 32px; height: 32px; margin-bottom: 16px;"></div>
           <h3>Consulting Sarvam AI & Computational Gastronomy...</h3>
-          <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 6px;">Deconstructing recipes, identifying hidden regional allergens, and matching flavor profiles.</p>
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 6px;">
+            Analyzing allergens, estimating calories, and benchmarking against your favorite dishes.
+          </p>
         </div>
 
+        <!-- Error Card -->
         <div id="errorCard" class="card" style="display: none; border-left: 5px solid var(--unsafe); background: var(--unsafe-bg);">
           <h3 style="color: #b91c1c; margin-bottom: 8px;">⚠️ Something went wrong</h3>
           <p id="errorMessage" style="color: #7f1d1d; font-size: 0.95rem;"></p>
