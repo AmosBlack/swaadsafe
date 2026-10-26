@@ -2,10 +2,10 @@ import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { analyzeMenu, digitizeMenuImage } from "./services/sarvamService.js";
-import { SAMPLE_MENUS } from "./data/sampleMenus.js";
+import sampleMenusHandler from "./api/sample-menus.js";
+import analyzeHandler from "./api/analyze.js";
 
-// Ensure .env is loaded even if run without --env-file
+// Ensure .env is loaded locally even if run without --env-file
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const envPath = path.join(__dirname, ".env");
@@ -35,83 +35,16 @@ const MIME_TYPES = {
 };
 
 const server = http.createServer(async (req, res) => {
-  // CORS & Security Headers
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-
-  if (req.method === "OPTIONS") {
-    res.writeHead(204);
-    res.end();
-    return;
-  }
-
   const url = new URL(req.url, `http://${req.headers.host}`);
 
-  // API Route: Sample Menus
-  if (req.method === "GET" && url.pathname === "/api/sample-menus") {
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify(SAMPLE_MENUS));
-    return;
+  // Route: /api/sample-menus
+  if (url.pathname === "/api/sample-menus") {
+    return sampleMenusHandler(req, res);
   }
 
-  // API Route: Analyze Menu
-  if (req.method === "POST" && url.pathname === "/api/analyze") {
-    let body = "";
-    req.on("data", (chunk) => (body += chunk));
-    req.on("end", async () => {
-      try {
-        const payload = JSON.parse(body);
-        let {
-          menuText,
-          imageBase64,
-          allergens,
-          dietaryRestrictions,
-          tastePreferences,
-          preferredLanguage,
-          calorieGoal,
-          mealType,
-          favoriteDishes,
-          dietaryGoals
-        } = payload;
-
-        // If an image was submitted, run Sarvam Vision / Document AI
-        if (imageBase64 && !menuText) {
-          const match = imageBase64.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
-          if (match) {
-            const mimeType = match[1];
-            const buffer = Buffer.from(match[2], "base64");
-            menuText = await digitizeMenuImage(buffer, mimeType);
-          }
-        }
-
-        if (!menuText || !menuText.trim()) {
-          res.writeHead(400, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ error: "No menu text could be retrieved or provided." }));
-          return;
-        }
-
-        const advisory = await analyzeMenu({
-          menuText,
-          allergens: allergens || [],
-          dietaryRestrictions: dietaryRestrictions || [],
-          tastePreferences: tastePreferences || [],
-          preferredLanguage: preferredLanguage || "English",
-          calorieGoal: Number(calorieGoal) || 650,
-          mealType: mealType || "Lunch",
-          favoriteDishes: favoriteDishes || "",
-          dietaryGoals: dietaryGoals || []
-        });
-
-        res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify(advisory));
-      } catch (err) {
-        console.error("Analysis Error:", err);
-        res.writeHead(500, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ error: err.message || "Failed to analyze menu." }));
-      }
-    });
-    return;
+  // Route: /api/analyze
+  if (url.pathname === "/api/analyze") {
+    return analyzeHandler(req, res);
   }
 
   // Static File Serving

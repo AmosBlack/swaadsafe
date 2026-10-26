@@ -26,20 +26,31 @@ Dining out with allergies is hazardous, particularly in Indian and complex globa
 
 The application uses modern **Node.js (v20+)** native modules with **zero external dependencies** required for core execution.
 
-### 1. Ensure your `.env` contains your Sarvam API Key
-```env
-SARVAM_API_KEY=your_sarvam_api_key_here
-```
+### Local Development:
+1. Ensure your `.env` contains your Sarvam API Key:
+   ```env
+   SARVAM_API_KEY=your_sarvam_api_key_here
+   ```
+2. Start the server:
+   ```bash
+   npm start
+   ```
+3. Open **http://localhost:3000** in your browser.
 
-### 2. Start the Server
-```bash
-npm start
-# or directly:
-node --env-file=.env server.js
-```
+---
 
-### 3. Open in Browser
-Visit **[http://localhost:3000](http://localhost:3000)** in your browser or on your phone connected to the local network.
+## ⚡ Deploying to Vercel
+
+The project is pre-configured for instant zero-config deployment on Vercel:
+
+1. **Push your code to GitHub / GitLab / Bitbucket**.
+2. **Import the repository into Vercel**.
+3. **Add Environment Variable**:
+   - In Vercel Project Settings ➔ **Environment Variables**, add:
+     - `SARVAM_API_KEY`: `<your_sarvam_api_key>`
+4. Click **Deploy**. Vercel will:
+   - Automatically host static UI files in `public/` on its global edge network.
+   - Run `/api/sample-menus` and `/api/analyze` as serverless functions with a 60-second execution window (`vercel.json`).
 
 ---
 
