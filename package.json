@@ -1,0 +1,12 @@
+{
+  "name": "swaadsafe",
+  "version": "1.0.0",
+  "description": "Smart Menu Allergen & Taste Advisor powered by Sarvam AI & Foodoscope",
+  "type": "module",
+  "scripts": {
+    "start": "node --env-file=.env server.js",
+    "dev": "node --watch --env-file=.env server.js"
+  },
+  "keywords": ["sarvam-ai", "foodoscope", "allergy-advisor", "taste-profiler"],
+  "license": "MIT"
+}

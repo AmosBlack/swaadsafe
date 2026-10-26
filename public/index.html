@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SwaadSafe - AI Menu Allergy & Taste Advisor</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <span class="badge-tag">Powered by Sarvam AI & Computational Gastronomy</span>
+      <h1>🍽️ SwaadSafe</h1>
+      <p class="subtitle">Scan any restaurant menu. Detect hidden regional allergens, customize recipes with the kitchen, and get dishes tailored to your personal taste profile.</p>
+    </header>
+
+    <div class="grid-layout">
+      <!-- LEFT COLUMN: Profile & Preferences -->
+      <aside>
+        <div class="card">
+          <h2 class="card-title">🛡️ 1. Your Allergy Profile</h2>
+          <span class="section-label">Select allergens to avoid:</span>
+          <div class="pill-grid" id="allergenPills">
+            <div class="pill selected-allergen" data-value="Dairy / Milk / Lactose">🥛 Dairy / Milk / Ghee</div>
+            <div class="pill selected-allergen" data-value="Gluten / Wheat">🌾 Gluten / Wheat / Hing</div>
+            <div class="pill selected-allergen" data-value="Peanuts">🥜 Peanuts / Shengdana</div>
+            <div class="pill selected-allergen" data-value="Tree Nuts (Cashew, Almond)">🌰 Tree Nuts (Cashew/Kaju)</div>
+            <div class="pill" data-value="Soy / Soya">🌱 Soy / Soy Sauce</div>
+            <div class="pill" data-value="Eggs">🥚 Eggs</div>
+            <div class="pill" data-value="Mustard">🟡 Mustard / Sarson</div>
+            <div class="pill" data-value="Sesame">⚪ Sesame / Til</div>
+            <div class="pill" data-value="Shellfish / Fish">🦐 Shellfish / Fish</div>
+          </div>
+          <input type="text" id="customAllergen" placeholder="+ Add custom allergen (e.g. Garlic, Mushroom)">
+
+          <h2 class="card-title" style="margin-top: 20px;">🥗 2. Dietary Preference</h2>
+          <div class="pill-grid" id="dietPills">
+            <div class="pill selected-diet" data-value="Vegetarian">🌱 Vegetarian</div>
+            <div class="pill" data-value="Vegan">🥑 Vegan</div>
+            <div class="pill" data-value="Jain (No Onion/Garlic)">🙏 Jain</div>
+            <div class="pill" data-value="Non-Vegetarian">🍗 Non-Veg</div>
+          </div>
+
+          <h2 class="card-title" style="margin-top: 20px;">🌶️ 3. Taste Profile</h2>
+          <span class="section-label">What flavors do you crave today?</span>
+          <div class="pill-grid" id="tastePills">
+            <div class="pill selected-taste" data-value="Spicy / Teekha">🌶️ Spicy (Teekha)</div>
+            <div class="pill selected-taste" data-value="Tangy / Chatpata">🍋 Tangy (Chatpata)</div>
+            <div class="pill" data-value="Rich & Creamy">🧈 Rich & Creamy</div>
+            <div class="pill selected-taste" data-value="Savory & Earthy">🍲 Savory & Comforting</div>
+            <div class="pill" data-value="Light & Fresh">🥗 Light & Healthy</div>
+            <div class="pill" data-value="Mild / Low Spice">🌿 Mild (Low Spice)</div>
+          </div>
+
+          <label class="section-label" for="waiterLanguage">🗣️ Language for Waiter Note:</label>
+          <select id="waiterLanguage">
+            <option value="Hindi" selected>Hindi (हिन्दी)</option>
+            <option value="English">English</option>
+            <option value="Tamil">Tamil (தமிழ்)</option>
+            <option value="Telugu">Telugu (తెలుగు)</option>
+            <option value="Kannada">Kannada (ಕನ್ನಡ)</option>
+            <option value="Marathi">Marathi (मराठी)</option>
+            <option value="Gujarati">Gujarati (ગુજરાતી)</option>
+            <option value="Bengali">Bengali (বাংলা)</option>
+          </select>
+        </div>
+      </aside>
+
+      <!-- RIGHT COLUMN: Menu Input & Analysis -->
+      <main>
+        <div class="card">
+          <div class="tabs">
+            <button class="tab-btn active" data-tab="tab-samples">Sample Menus</button>
+            <button class="tab-btn" data-tab="tab-upload">📸 Upload Menu Photo</button>
+            <button class="tab-btn" data-tab="tab-paste">✏️ Paste Menu Text</button>
+          </div>
+
+          <!-- TAB 1: Sample Menus -->
+          <div id="tab-samples" class="tab-content active">
+            <label class="section-label" for="sampleSelect">Select a pre-loaded restaurant menu:</label>
+            <select id="sampleSelect">
+              <option value="north_indian">Royal Rasoi (North Indian, Tandoor & Mughlai)</option>
+              <option value="south_indian">Dakshin Sagar (Authentic South Indian & Tiffins)</option>
+              <option value="indo_chinese">Wok & Spice (Indo-Chinese Fusion)</option>
+            </select>
+            <textarea id="samplePreviewText" rows="6" readonly style="font-family: monospace; font-size: 0.85rem; background: #f8fafc;"></textarea>
+          </div>
+
+          <!-- TAB 2: Upload Menu Photo -->
+          <div id="tab-upload" class="tab-content">
+            <input type="file" id="menuFileInput" accept="image/*" style="display: none;">
+            <div class="dropzone" id="dropzone">
+              <div class="dropzone-icon">📷</div>
+              <strong>Click to upload or take a photo of the menu</strong>
+              <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px;">Supports JPG, PNG, WebP (processed by Sarvam Vision / Document AI)</p>
+            </div>
+            <div id="previewContainer" class="preview-container" style="display: none;">
+              <img id="previewImg" class="preview-img" alt="Menu preview">
+              <button class="btn-remove-img" id="btnRemoveImg">✕</button>
+            </div>
+          </div>
+
+          <!-- TAB 3: Paste Menu Text -->
+          <div id="tab-paste" class="tab-content">
+            <label class="section-label" for="customMenuText">Paste or type dishes from the menu:</label>
+            <textarea id="customMenuText" rows="8" placeholder="e.g.&#10;1. Paneer Butter Masala&#10;2. Dal Tadka&#10;3. Rava Dosa&#10;4. Veg Manchurian"></textarea>
+          </div>
+
+          <button id="btnAnalyze" class="btn-primary">
+            <span>✨ Analyze Menu with Sarvam AI</span>
+          </button>
+        </div>
+
+        <!-- RESULTS CONTAINER -->
+        <div id="resultsCard" class="card" style="display: none;">
+          <h2 class="card-title">🔍 Safety & Taste Analysis</h2>
+          <div id="summaryBanner" class="results-header"></div>
+
+          <h3 style="font-size: 1.05rem; margin-bottom: 12px; color: #047857;">🌟 Top Safe Recommendations for Your Taste</h3>
+          <div id="topRecommendations"></div>
+
+          <h3 style="font-size: 1.05rem; margin-top: 24px; margin-bottom: 12px; color: #1e293b;">📋 Full Dish Breakdown</h3>
+          <div id="dishesList"></div>
+
+          <!-- Waiter Safety Card -->
+          <div id="waiterCard" class="waiter-card">
+            <div class="waiter-card-header">
+              <span>🧑‍🍳 Show This to Your Waiter / Chef</span>
+              <button class="btn-copy" id="btnCopyWaiter">Copy Note</button>
+            </div>
+            <div id="waiterCardBody" class="waiter-card-body"></div>
+          </div>
+        </div>
+
+        <div id="loadingCard" class="card empty-state" style="display: none;">
+          <div class="spinner" style="border-top-color: var(--primary); width: 32px; height: 32px; margin-bottom: 16px;"></div>
+          <h3>Consulting Sarvam AI & Computational Gastronomy...</h3>
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 6px;">Deconstructing recipes, identifying hidden regional allergens, and matching flavor profiles.</p>
+        </div>
+
+        <div id="errorCard" class="card" style="display: none; border-left: 5px solid var(--unsafe); background: var(--unsafe-bg);">
+          <h3 style="color: #b91c1c; margin-bottom: 8px;">⚠️ Something went wrong</h3>
+          <p id="errorMessage" style="color: #7f1d1d; font-size: 0.95rem;"></p>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
