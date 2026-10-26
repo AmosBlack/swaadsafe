@@ -3,29 +3,41 @@
 let currentTab = "tab-samples";
 let uploadedImageBase64 = null;
 let sampleMenus = {};
+let allDishesData = [];
+let activeCourseFilter = "ALL";
 
 document.addEventListener("DOMContentLoaded", async () => {
   setupPills();
+  setupCalorieControls();
   setupTabs();
   setupImageUpload();
+  setupCourseFilters();
   await loadSampleMenus();
 
   document.getElementById("btnAnalyze").addEventListener("click", handleAnalyze);
   document.getElementById("btnCopyWaiter").addEventListener("click", copyWaiterCard);
 });
 
-// Setup clickable pills for allergens, diets, and taste
+// Setup clickable pills for allergens, diets, meals, and taste
 function setupPills() {
   document.querySelectorAll(".pill").forEach((pill) => {
     pill.addEventListener("click", () => {
-      if (pill.dataset.value) {
-        if (pill.closest("#allergenPills")) {
-          pill.classList.toggle("selected-allergen");
-        } else if (pill.closest("#tastePills")) {
-          pill.classList.toggle("selected-taste");
-        } else if (pill.closest("#dietPills")) {
-          // Single select or multi select for diet
+      if (!pill.dataset.value) return;
+
+      const parentGrid = pill.parentElement.id;
+      if (parentGrid === "allergenPills") {
+        pill.classList.toggle("selected-allergen");
+      } else if (parentGrid === "tastePills") {
+        pill.classList.toggle("selected-taste");
+      } else if (parentGrid === "mealTimePills") {
+        // Single select for meal time
+        document.querySelectorAll("#mealTimePills .pill").forEach((p) => p.classList.remove("selected-meal"));
+        pill.classList.add("selected-meal");
+      } else if (parentGrid === "dietaryGoalPills") {
+        if (pill.classList.contains("selected-diet") || pill.dataset.value.includes("Vegetarian") || pill.dataset.value.includes("Vegan") || pill.dataset.value.includes("Jain")) {
           pill.classList.toggle("selected-diet");
+        } else {
+          pill.classList.toggle("selected-goal");
         }
       }
     });
@@ -44,6 +56,26 @@ function setupPills() {
       document.getElementById("allergenPills").appendChild(pill);
       customInput.value = "";
     }
+  });
+}
+
+// Setup Calorie input and preset buttons
+function setupCalorieControls() {
+  const calInput = document.getElementById("calorieGoalInput");
+  const calDisplay = document.getElementById("calorieDisplay");
+
+  const syncDisplay = () => {
+    const val = calInput.value || 650;
+    calDisplay.textContent = `${val} kcal`;
+  };
+
+  calInput.addEventListener("input", syncDisplay);
+
+  document.querySelectorAll(".btn-preset").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      calInput.value = btn.dataset.cal;
+      syncDisplay();
+    });
   });
 }
 
@@ -93,6 +125,18 @@ function setupImageUpload() {
   });
 }
 
+// Course Filters
+function setupCourseFilters() {
+  document.querySelectorAll(".btn-course-filter").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".btn-course-filter").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      activeCourseFilter = btn.dataset.category;
+      renderDishesList();
+    });
+  });
+}
+
 // Load sample menus from server
 async function loadSampleMenus() {
   try {
@@ -120,9 +164,21 @@ async function handleAnalyze() {
   const allergens = Array.from(document.querySelectorAll("#allergenPills .selected-allergen")).map(
     (el) => el.dataset.value
   );
-  const diets = Array.from(document.querySelectorAll("#dietPills .selected-diet")).map(
+
+  const selectedMealEl = document.querySelector("#mealTimePills .selected-meal");
+  const mealType = selectedMealEl ? selectedMealEl.dataset.value : "Lunch";
+
+  const calorieGoal = Number(document.getElementById("calorieGoalInput").value) || 650;
+
+  const dietaryRestrictions = Array.from(document.querySelectorAll("#dietaryGoalPills .selected-diet")).map(
     (el) => el.dataset.value
   );
+  const dietaryGoals = Array.from(document.querySelectorAll("#dietaryGoalPills .selected-goal")).map(
+    (el) => el.dataset.value
+  );
+
+  const favoriteDishes = document.getElementById("favoriteDishesInput").value.trim();
+
   const tastes = Array.from(document.querySelectorAll("#tastePills .selected-taste")).map(
     (el) => el.dataset.value
   );
@@ -167,9 +223,13 @@ async function handleAnalyze() {
         menuText,
         imageBase64,
         allergens,
-        dietaryRestrictions: diets,
+        dietaryRestrictions,
+        dietaryGoals,
         tastePreferences: tastes,
-        preferredLanguage
+        preferredLanguage,
+        calorieGoal,
+        mealType,
+        favoriteDishes
       })
     });
 
@@ -198,9 +258,32 @@ async function handleAnalyze() {
 
 // Render analysis results
 function renderResults(data) {
+  allDishesData = data.dishes || [];
+
   // Summary
   const summaryBanner = document.getElementById("summaryBanner");
-  summaryBanner.innerHTML = `<strong>Advisory Summary:</strong> ${data.summary || "Menu analysis completed."}`;
+  summaryBanner.innerHTML = `<strong>Advisory & Nutrition Summary:</strong> ${data.summary || "Menu analysis completed."}`;
+
+  // Recommended Meal Combo
+  const comboContainer = document.getElementById("comboContainer");
+  if (data.recommended_meal_combo && Array.isArray(data.recommended_meal_combo.items) && data.recommended_meal_combo.items.length > 0) {
+    document.getElementById("comboTitle").textContent = `🍱 ${data.recommended_meal_combo.meal_name || "Recommended Meal Combo"}`;
+    document.getElementById("comboCalories").textContent = `🔥 ~${data.recommended_meal_combo.total_calories || "600"} kcal`;
+
+    const itemsContainer = document.getElementById("comboItems");
+    itemsContainer.innerHTML = "";
+    data.recommended_meal_combo.items.forEach((item) => {
+      const pill = document.createElement("span");
+      pill.className = "combo-item-pill";
+      pill.textContent = `✓ ${item}`;
+      itemsContainer.appendChild(pill);
+    });
+
+    document.getElementById("comboReason").textContent = data.recommended_meal_combo.fit_reason || "";
+    comboContainer.style.display = "block";
+  } else {
+    comboContainer.style.display = "none";
+  }
 
   // Top Recommendations
   const topRecContainer = document.getElementById("topRecommendations");
@@ -220,54 +303,8 @@ function renderResults(data) {
     topRecContainer.innerHTML = `<p style="color: #64748b;">No direct recommendations match all criteria.</p>`;
   }
 
-  // Dishes List
-  const dishesList = document.getElementById("dishesList");
-  dishesList.innerHTML = "";
-
-  if (Array.isArray(data.dishes)) {
-    data.dishes.forEach((dish) => {
-      const card = document.createElement("div");
-      const status = (dish.safety_status || "CAUTION").toLowerCase();
-      card.className = `dish-card ${status}`;
-
-      const allergensText = dish.detected_allergens && dish.detected_allergens.length > 0
-        ? dish.detected_allergens.join(", ")
-        : "None identified";
-
-      let alertHtml = "";
-      if (dish.hidden_allergen_alert && dish.hidden_allergen_alert !== "None detected") {
-        alertHtml = `<div class="allergen-alert-box"><strong>⚠️ Hidden Allergen Detail:</strong> ${dish.hidden_allergen_alert}</div>`;
-      }
-
-      let customHtml = "";
-      if (dish.can_customize && dish.customization_request) {
-        customHtml = `
-          <div class="customization-box">
-            <strong>🧑‍🍳 How to customize:</strong> ${dish.customization_request}
-            ${dish.customization_request_local ? `<div style="font-style: italic; margin-top: 4px; color: #064e3b;">"${dish.customization_request_local}"</div>` : ""}
-          </div>
-        `;
-      }
-
-      card.innerHTML = `
-        <div class="dish-header">
-          <div>
-            <span class="dish-name">${dish.name}</span>
-            <span style="font-size: 0.8rem; color: #64748b; margin-left: 8px;">(${dish.category || "Dish"})</span>
-          </div>
-          <span class="dish-badge ${status}">${dish.safety_status}</span>
-        </div>
-        <div class="dish-meta">
-          <span class="score-badge">Taste Match: ${dish.taste_score || 75}/100</span>
-          <span>Allergens: ${allergensText}</span>
-        </div>
-        <p style="font-size: 0.9rem; color: #334155; margin-bottom: 6px;">${dish.taste_profile_notes || ""}</p>
-        ${alertHtml}
-        ${customHtml}
-      `;
-      dishesList.appendChild(card);
-    });
-  }
+  // Render Dishes List (with current course filter)
+  renderDishesList();
 
   // Waiter Card
   const waiterBody = document.getElementById("waiterCardBody");
@@ -282,6 +319,80 @@ function renderResults(data) {
       <div style="margin-top: 4px;">${en}</div>
     `;
   }
+}
+
+// Filter and render dishes by course
+function renderDishesList() {
+  const dishesList = document.getElementById("dishesList");
+  dishesList.innerHTML = "";
+
+  const filtered = allDishesData.filter((dish) => {
+    if (activeCourseFilter === "ALL") return true;
+    const cat = (dish.category || "").toUpperCase();
+    if (activeCourseFilter === "STARTER") return cat.includes("START") || cat.includes("APPET") || cat.includes("SNACK");
+    if (activeCourseFilter === "MAIN") return cat.includes("MAIN");
+    if (activeCourseFilter === "BREAD") return cat.includes("BREAD") || cat.includes("RICE") || cat.includes("ROTI") || cat.includes("NAAN");
+    if (activeCourseFilter === "DESSERT") return cat.includes("DESSERT") || cat.includes("BEVERAGE") || cat.includes("SWEET") || cat.includes("DRINK");
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    dishesList.innerHTML = `<p style="color: #64748b; padding: 16px 0;">No dishes found in this course category.</p>`;
+    return;
+  }
+
+  filtered.forEach((dish) => {
+    const card = document.createElement("div");
+    const status = (dish.safety_status || "CAUTION").toLowerCase();
+    card.className = `dish-card ${status}`;
+
+    const allergensText = dish.detected_allergens && dish.detected_allergens.length > 0
+      ? dish.detected_allergens.join(", ")
+      : "None identified";
+
+    let favHtml = "";
+    if (dish.favorite_similarity_note && dish.favorite_similarity_note !== "None" && dish.favorite_similarity_note !== "null") {
+      favHtml = `<div class="fav-badge">❤️ <strong>Flavor Match:</strong> ${dish.favorite_similarity_note}</div>`;
+    }
+
+    let alertHtml = "";
+    if (dish.hidden_allergen_alert && dish.hidden_allergen_alert !== "None detected") {
+      alertHtml = `<div class="allergen-alert-box"><strong>⚠️ Hidden Allergen Detail:</strong> ${dish.hidden_allergen_alert}</div>`;
+    }
+
+    let customHtml = "";
+    if (dish.can_customize && dish.customization_request) {
+      customHtml = `
+        <div class="customization-box">
+          <strong>🧑‍🍳 How to customize:</strong> ${dish.customization_request}
+          ${dish.customization_request_local ? `<div style="font-style: italic; margin-top: 4px; color: #064e3b;">"${dish.customization_request_local}"</div>` : ""}
+        </div>
+      `;
+    }
+
+    const macroTag = dish.macro_highlight ? `<span class="macro-badge">${dish.macro_highlight}</span>` : "";
+
+    card.innerHTML = `
+      <div class="dish-header">
+        <div>
+          <span class="dish-name">${dish.name}</span>
+          <span style="font-size: 0.8rem; color: #64748b; margin-left: 8px;">(${dish.category || "Dish"})</span>
+        </div>
+        <span class="dish-badge ${status}">${dish.safety_status}</span>
+      </div>
+      <div class="dish-meta">
+        <span class="cal-badge">🔥 ~${dish.estimated_calories || "400"} kcal</span>
+        ${macroTag}
+        <span class="score-badge">Taste Match: ${dish.taste_score || 75}/100</span>
+        <span>Allergens: ${allergensText}</span>
+      </div>
+      ${favHtml}
+      <p style="font-size: 0.9rem; color: #334155; margin-bottom: 6px;">${dish.taste_profile_notes || ""}</p>
+      ${alertHtml}
+      ${customHtml}
+    `;
+    dishesList.appendChild(card);
+  });
 }
 
 // Copy waiter card text

@@ -67,6 +67,9 @@ Visit **[http://localhost:3000](http://localhost:3000)** in your browser or on y
 - **📸 Menu Photo Capture**: Drag-and-drop or photograph a physical menu.
 - **⚡ Pre-loaded Sample Menus**: One-click test with North Indian Mughlai, South Indian Udupi/Chettinad, and Indo-Chinese menus.
 - **🛡️ Custom Allergen Matrix**: Select Dairy, Gluten, Peanuts, Tree nuts, Soy, Eggs, Mustard, Sesame, or type custom allergies.
-- **🌶️ Taste Profile Matching**: Choose your desired mood (Spicy/Teekha, Tangy/Chatpata, Savory, Light, Rich & Creamy).
+- **🔥 Calorie Counting & Target Goals**: Sets calorie limits for the meal (e.g. 450, 650, 850 kcal) with portion calorie estimates and macro tags (High Protein, Low Carb, Balanced).
+- **❤️ Favorite Dishes Benchmarking**: Type your favorite dishes; Sarvam matches gravies, spices, and textures to find similar menu items.
+- **🍱 Intelligent Meal Combo Builder**: Assembles a complete course combination (e.g. Starter + Main) that is 100% allergen-safe and fits your calorie budget.
+- **⏰ Meal of the Day & Course Filtering**: Classifies and filters by Breakfast, Lunch, Dinner, Snack, Starters, Mains, Breads & Rice, Desserts.
 - **📋 Waiter Safety Card**: Generates instructions translated to the waiter's local language with a single "Copy Note" button.
 # swaadsafe
